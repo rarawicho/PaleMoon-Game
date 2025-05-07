@@ -1,35 +1,32 @@
 extends CharacterBody2D
 
-const SPEED = 200
-const BULLET_SCENE = preload("res://scenes/Bullet.tscn")
+@export var SPEED: float
+@onready var animated_sprite = $AnimatedSprite2D
+var is_fascing_right = true
 
-@onready var muzzle = $Muzzle
-var shoot_direction = Vector2.RIGHT
-
-func _process(delta):
-	var dir = Vector2.ZERO
-
-	dir.x = Input.get_action_strength("ui_right") - Input.get_action_strength("ui_left")
-	dir.y = Input.get_action_strength("ui_down") - Input.get_action_strength("ui_up")
-	
-	velocity = dir.normalized() * SPEED
+func _physics_process(delta):
+	move_x()
+	flip()
+	update_animations()
 	move_and_slide()
 
-	if Input.is_action_pressed("shoot_up"):
-		shoot_direction = Vector2.UP
-		shoot()
-	elif Input.is_action_pressed("shoot_down"):
-		shoot_direction = Vector2.DOWN
-		shoot()
-	elif Input.is_action_pressed("shoot_left"):
-		shoot_direction = Vector2.LEFT
-		shoot()
-	elif Input.is_action_pressed("shoot_right"):
-		shoot_direction = Vector2.RIGHT
-		shoot()
-
-func shoot():
-	var bullet = BULLET_SCENE.instantiate()
-	bullet.position = muzzle.global_position
-	bullet.direction = shoot_direction
-	get_parent().add_child(bullet)
+	#si esta mirando a la derecha y aprieto a la izquierda 
+	#si esta mirando a la izquierda y aprieto a la derecha
+	
+func update_animations():
+	if velocity.x:
+		animated_sprite.play("run")
+	else:
+		animated_sprite.play("idle")
+		
+func flip():
+	if (is_fascing_right and velocity.x < 0) or (not is_fascing_right and velocity.x > 0):
+		$AnimatedSprite2D.scale.x *= -1
+		is_fascing_right = not is_fascing_right
+		
+	move_and_slide()
+	
+func move_x():
+		var input_axis = Input.get_axis("move_left", "move_right")
+		velocity.x = input_axis * SPEED
+	
